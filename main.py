@@ -315,3 +315,270 @@ import seaborn as sns
 # )
 
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+import numpy as np
+
+# Set global seaborn styling for better aesthetics
+sns.set_theme(style="whitegrid", palette="Set2")
+
+# Create a combined dataframe for shared metrics
+df_student['Role'] = 'Student'
+df_teacher['Role'] = 'Teacher'
+
+# Extract only columns that are identical in meaning between both datasets
+common_cols = ['signif', 'diff', 'influ', 'prod', 'subject', 'initv', 'currv', 'support', 'Role']
+df_combined = pd.concat([
+    df_student[[c for c in common_cols if c in df_student.columns]], 
+    df_teacher[[c for c in common_cols if c in df_teacher.columns]]
+], ignore_index=True)
+
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+
+
+
+# Melt dataframe to stack all 0-10 metrics into a single column for a grouped boxplot
+metrics_0_10 = ['signif', 'diff', 'influ', 'prod', 'support']
+df_melted = df_combined.melt(id_vars=['Role'], value_vars=metrics_0_10, 
+                             var_name='Metric', value_name='Score')
+
+plt.figure(figsize=(12, 6))
+sns.boxplot(data=df_melted, x='Metric', y='Score', hue='Role', palette='Set1')
+plt.title('Student vs Teacher: Distributions of Common 0-10 Metrics', fontsize=14, fontweight='bold')
+plt.ylabel('Score (0-10)')
+plt.xlabel('Metric')
+plt.legend(title='Role')
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+plt.figure(figsize=(10, 5))
+sns.kdeplot(data=df_combined, x="support", hue="Role", fill=True, 
+            common_norm=False, palette="crest", alpha=0.5, linewidth=2)
+plt.title('Density Distribution of Policy Support (0-10)', fontsize=14, fontweight='bold')
+plt.xlabel('Support Level')
+plt.ylabel('Density')
+plt.xlim(0, 10)
+plt.show()
+
+
+
+plt.figure(figsize=(12, 6))
+sns.barplot(data=df_combined, x='subject', y='prod', hue='Role', 
+            errorbar=('ci', 95), capsize=0.1, palette='magma')
+plt.title('Average Productivity Impact by Subject Area', fontsize=14, fontweight='bold')
+plt.xlabel('Subject')
+plt.ylabel('Average Productivity Score (0-10)')
+plt.legend(title='Role', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+# Melt initial and current views
+df_views = df_combined.melt(id_vars=['Role'], value_vars=['initv', 'currv'], 
+                            var_name='Time', value_name='Viewpoint')
+
+plt.figure(figsize=(8, 6))
+sns.pointplot(data=df_views, x='Time', y='Viewpoint', hue='Role', 
+              markers=["o", "s"], linestyles=["-", "--"], palette='Dark2')
+plt.title('Shift in Viewpoint: Initial vs. Current', fontsize=14, fontweight='bold')
+plt.xlabel('Time (initv = Initial, currv = Current)')
+plt.ylabel('Average Viewpoint (-1: Against, 0: Neutral, 1: In Favour)')
+plt.ylim(-1.1, 1.1)
+plt.show()
+
+
+
+
+
+plt.figure(figsize=(10, 6))
+sns.lmplot(data=df_combined, x='influ', y='prod', hue='Role', 
+           scatter_kws={'alpha':0.4}, height=6, aspect=1.5, palette='Set1')
+plt.title('Correlation: Influence of Policy vs Productivity Impact', fontsize=14, fontweight='bold')
+plt.xlabel('Influence on School (0-10)')
+plt.ylabel('Productivity Score (0-10)')
+plt.xlim(0, 10)
+plt.ylim(0, 10)
+plt.show()
+
+
+
+
+
+
+student_num = df_student.select_dtypes(include=[np.number])
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(student_num.corr(), annot=True, cmap='coolwarm', fmt=".2f", 
+            linewidths=0.5, vmin=-1, vmax=1)
+plt.title('Student Responses: Correlation Heatmap', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+teacher_num = df_teacher.select_dtypes(include=[np.number])
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(teacher_num.corr(), annot=True, cmap='coolwarm', fmt=".2f", 
+            linewidths=0.5, vmin=-1, vmax=1)
+plt.title('Teacher Responses: Correlation Heatmap', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+plt.figure(figsize=(10, 6))
+experience_order = ["<3 Yrs", "4-8 Yrs", "8-12 Yrs", ">13 Yrs"]
+sns.violinplot(data=df_teacher, x='years', y='easy', order=experience_order, 
+               palette='mako', inner="quartile")
+plt.title('Ease of Enforcement across Years of Experience', fontsize=14, fontweight='bold')
+plt.xlabel('Years of Experience')
+plt.ylabel('Ease of Enforcement (-2 to 2)')
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=df_student, x='grade', y='change', palette='pastel')
+sns.stripplot(data=df_student, x='grade', y='change', color=".3", size=4, alpha=0.5)
+plt.title('Witnessed Change (0-10) Distributed by Grade', fontsize=14, fontweight='bold')
+plt.xlabel('Grade Level')
+plt.ylabel('Perceived Change (0-10)')
+plt.show()
+
+#9done
+
+
+plt.figure(figsize=(10, 6))
+sns.countplot(data=df_student, x='grade', hue='source', palette='Set3', edgecolor='black')
+plt.title('Information Source by Student Grade', fontsize=14, fontweight='bold')
+plt.xlabel('Grade Level')
+plt.ylabel('Count of Students')
+plt.legend(title='Source', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+
+source_counts = df_student['source'].value_counts()
+
+# 2. Plot the pie chart using pandas built-in plotting (which uses matplotlib)
+source_counts.plot(
+    kind='pie', 
+    autopct='%1.1f%%', 
+    startangle=140, 
+    cmap='Set3', 
+    wedgeprops={'edgecolor': 'black'}
+)
+
+# 3. Customize the chart aesthetics
+plt.title('Distribution of Information Sources', fontsize=14, fontweight='bold')
+plt.ylabel('')  # Hides the default 'source' column label on the y-axis
+plt.tight_layout()
+
+# 4. Display the chart
+plt.show()
+
+
+plt.figure(figsize=(8, 6))
+sns.boxplot(data=df_teacher, x='often', y='support', color='white', fliersize=0)
+sns.swarmplot(data=df_teacher, x='often', y='support', palette='dark:b', size=6, alpha=0.7)
+plt.title('Policy Support vs. Student Compliance Frequency', fontsize=14, fontweight='bold')
+plt.xlabel('Compliance Frequency (-1: Rarely, 0: Sometimes, 1: Often)')
+plt.ylabel('Support for Policy (0-10)')
+plt.show()
+
+
+# Create a crosstab mapping Initial View to Current View
+student_transition = pd.crosstab(df_student['initv'], df_student['currv'])
+student_transition.index = ['Against (-1)', 'Neutral (0)', 'In Favour (1)']
+student_transition.columns = ['Against (-1)', 'Neutral (0)', 'In Favour (1)']
+
+plt.figure(figsize=(7, 5))
+sns.heatmap(student_transition, annot=True, fmt='g', cmap='Blues', linewidths=1)
+plt.title('Student View Transition (Initial to Current)', fontsize=14, fontweight='bold')
+plt.xlabel('Current View')
+plt.ylabel('Initial View')
+plt.show()
+
+
+teacher_transition = pd.crosstab(df_teacher['initv'], df_teacher['currv'])
+# Fill missing with np.nan so Seaborn renders the square as empty/blank background
+teacher_transition = teacher_transition.reindex(index=[-1, 0, 1], columns=[-1, 0, 1], fill_value=np.nan)
+teacher_transition.index = ['Against (-1)', 'Neutral (0)', 'In Favour (1)']
+teacher_transition.columns = ['Against (-1)', 'Neutral (0)', 'In Favour (1)']
+
+plt.figure(figsize=(7, 5))
+sns.heatmap(teacher_transition, annot=True, fmt='g', cmap='Oranges', linewidths=1)
+plt.title('Teacher View Transition (Initial to Current)', fontsize=14, fontweight='bold')
+plt.xlabel('Current View')
+plt.ylabel('Initial View')
+plt.show()
+
+
+
+plt.figure(figsize=(10, 6))
+sns.barplot(data=df_teacher, x='easy', y='influ', palette='viridis', 
+            errorbar=('ci', 95), capsize=0.1)
+plt.title('Perceived Influence vs. Ease of Enforcement (Teachers)', fontsize=14, fontweight='bold')
+plt.xlabel('Ease of Enforcement (-2: Extremely Difficult to 2: Extremely Easy)')
+plt.ylabel('Average Influence Score (0-10)')
+plt.show()
+
+
+
+# Calculate percentages for stacked bars
+subject_view_counts = df_student.groupby(['subject', 'currv']).size().unstack(fill_value=0)
+subject_view_pct = subject_view_counts.div(subject_view_counts.sum(axis=1), axis=0) * 100
+
+# Rename columns for clarity
+subject_view_pct.columns = ['Against (-1)', 'Neutral (0)', 'In Favour (1)']
+
+subject_view_pct.plot(kind='bar', stacked=True, figsize=(12, 6), color=['#ef476f', '#ffd166', '#06d6a0'])
+plt.title('Student Current View Breakdown by Subject', fontsize=14, fontweight='bold')
+plt.xlabel('Subject Area')
+plt.ylabel('Percentage (%)')
+plt.legend(title='Current View', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+
+
+# Calculate percentages for stacked bars
+subject_view_counts = df_teacher.groupby(['subject', 'currv']).size().unstack(fill_value=0)
+subject_view_pct = subject_view_counts.div(subject_view_counts.sum(axis=1), axis=0) * 100
+
+# Rename columns for clarity
+subject_view_pct.columns = ['Neutral (0)', 'In Favour (1)'] # HUMAN ME VERY IMPORTANT AGAINST IS LITERALLY NOT THERE IN A SINLGE RESPONESE
+
+subject_view_pct.plot(kind='bar', stacked=True, figsize=(12, 6), color=["#4d47ef", "#be7500"])
+plt.title('Teacher Current View Breakdown by Subject', fontsize=14, fontweight='bold')
+plt.xlabel('Subject Area')
+plt.ylabel('Percentage (%)')
+plt.legend(title='Current View', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
