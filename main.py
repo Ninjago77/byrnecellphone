@@ -170,59 +170,148 @@ print(df_teacher.index)
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# I hereby define a dominicoA graph as a graphs in the form: one variable (if shared between both student and teacher student surveys) plotted as a bar graph across the variables of each individual grade, and one extra column for teachers, make sure that the other variable is calculated based on the percent of students/ teacher who selected that option in that variable
-# I hereby define a dominicoB graph as a graphs in the form: one variable (if shared between both student and teacher student surveys) plotted as a bar graph across the variables of each individual grade, and extra columns for teachers of different experience groups, make sure that the other variable is calculated based on the percent of students/ teacher who selected that option in that variable
+
+# def plot_demographic_distribution(
+#     df_student=None,
+#     df_teacher=None,
+#     column_to_plot=None,
+#     split_students_by_grade=False,
+#     split_teachers_by_experience=False,
+#     save=None,
+#     title=None,
+# ):
+#     """
+#     Generates a grouped bar chart for a specified column, supporting student-only,
+#     teacher-only, or combined student/teacher datasets with optional demographic splitting.
+#     """
+#     dfs_to_concat = []
+
+#     # --- 1. Process Student Data if available and requested ---
+#     if df_student is not None and column_to_plot in df_student.columns:
+#         if split_students_by_grade and "grade" in df_student.columns:
+#             # Group by Grade and target column, calculate percentages within each grade
+#             s_counts = (
+#                 df_student.groupby(["grade", column_to_plot])
+#                 .size()
+#                 .unstack(fill_value=0)
+#             )
+#             s_pct = s_counts.div(s_counts.sum(axis=1), axis=0) * 100
+#             s_pct.index = [f"Grade {int(i)}" for i in s_pct.index]
+#             dfs_to_concat.append(s_pct)
+#         else:
+#             # Clump all students together
+#             s_counts = df_student.groupby(column_to_plot).size()
+#             s_pct = (s_counts / s_counts.sum() * 100).to_frame().T
+#             s_pct.index = ["All Students"]
+#             dfs_to_concat.append(s_pct)
+
+#     # --- 2. Process Teacher Data if available and requested ---
+#     if df_teacher is not None and column_to_plot in df_teacher.columns:
+#         if split_teachers_by_experience and "years" in df_teacher.columns:
+#             # Group by Years of Experience and target column, calculate percentages within group
+#             t_counts = (
+#                 df_teacher.groupby(["years", column_to_plot])
+#                 .size()
+#                 .unstack(fill_value=0)
+#             )
+#             t_pct = t_counts.div(t_counts.sum(axis=1), axis=0) * 100
+#             t_pct.index = [f"{i}" for i in t_pct.index]
+#             dfs_to_concat.append(t_pct)
+#         else:
+#             # Clump all teachers together
+#             t_counts = df_teacher.groupby(column_to_plot).size()
+#             t_pct = (t_counts / t_counts.sum() * 100).to_frame().T
+#             t_pct.index = ["All Teachers"]
+#             dfs_to_concat.append(t_pct)
+
+#     # --- 3. Combine DataFrames ---
+#     if not dfs_to_concat:
+#         print(f"Error: Column '{column_to_plot}' not found in provided data.")
+#         return
+
+#     df_plot = pd.concat(dfs_to_concat, axis=0).fillna(0)
+
+#     # --- 4. Build Visual Asset ---
+#     fig, ax = plt.subplots(figsize=(12, 6))
+
+#     colors = plt.cm.tab10.colors
+#     categories = df_plot.columns
+#     groups = df_plot.index
+
+#     num_groups = len(groups)
+#     num_categories = len(categories)
+
+#     width = 0.8 / num_categories
+#     x = range(num_groups)
+
+#     # Plot grouped bars
+#     for i, category in enumerate(categories):
+#         offset = (i - num_categories / 2) * width + width / 2
+#         ax.bar(
+#             [pos + offset for pos in x],
+#             df_plot[category],
+#             width,
+#             label=str(category),
+#             color=colors[i % len(colors)],
+#         )
+
+#     # Styling Configuration
+#     chart_title = title if title else f"Distribution of '{column_to_plot}'"
+#     ax.set_title(chart_title, fontsize=14, fontweight="bold", pad=15)
+#     ax.set_xlabel("Grouping", fontsize=12, labelpad=10)
+#     ax.set_ylabel("Proportion Percentage (%)", fontsize=12, labelpad=10)
+#     ax.set_xticks(x)
+#     ax.set_xticklabels(groups, rotation=15 if num_groups > 4 else 0)
+#     ax.set_ylim(0, max(df_plot.values.max() + 5, 100))
+#     ax.grid(axis="y", linestyle="--", alpha=0.7)
+#     ax.set_axisbelow(True)
+
+#     ax.legend(
+#         title=column_to_plot.capitalize(),
+#         bbox_to_anchor=(1.01, 1),
+#         loc="upper left",
+#     )
+
+#     plt.tight_layout()
+#     if save != None:
+#         plt.savefig(f"./exports/{save}.png", dpi=300, bbox_inches="tight")
+#     plt.show()
+
+# plot_demographic_distribution(
+#     df_student=df_student,
+#     df_teacher=df_teacher,
+#     column_to_plot="subject",
+#     split_students_by_grade=False,
+#     split_teachers_by_experience=False,
+#     title="Subject Grouping",
+#     save="subject_teacher_squish_student_squish",
+# )
+# plot_demographic_distribution(
+#     df_student=df_student,
+#     df_teacher=df_teacher,
+#     column_to_plot="subject",
+#     split_students_by_grade=True,
+#     split_teachers_by_experience=True,
+#     title="Subject Grouping",
+#     save="subject_teacher_ind_student_ind",
+# )
+# plot_demographic_distribution(
+#     df_student=df_student,
+#     df_teacher=df_teacher,
+#     column_to_plot="subject",
+#     split_students_by_grade=False,
+#     split_teachers_by_experience=True,
+#     title="Subject Grouping",
+#     save="subject_teacher_ind_student_squish",
+# )
+# plot_demographic_distribution(
+#     df_student=df_student,
+#     df_teacher=df_teacher,
+#     column_to_plot="subject",
+#     split_students_by_grade=True,
+#     split_teachers_by_experience=False,
+#     title="Subject Grouping",
+#     save="subject_teacher_squish_student_ind",
+# )
 
 
-# 1. Normalize and transform Student data into within-grade percentages
-student_counts = df_student.groupby(['grade', 'subject']).size().unstack(fill_value=0)
-student_pct = student_counts.div(student_counts.sum(axis=1), axis=0) * 100
-# Reformat row index names for clear chart presentation
-student_pct.index = [f"Grade {int(i)}" for i in student_pct.index]
-
-# # 2. Normalize and transform Teacher data into a relative matching row
-# teacher_counts = df_teacher.groupby('subject').size()
-# teacher_pct = (teacher_counts / teacher_counts.sum() * 100).to_frame().T
-# teacher_pct.index = ['Teachers']
-
-teacher_counts = df_teacher.groupby(['years', 'subject']).size().unstack(fill_value=0)
-teacher_pct = teacher_counts.div(teacher_counts.sum(axis=1), axis=0) * 100
-# Reformat row index names for clear chart presentation
-teacher_pct.index = [f"{i}" for i in teacher_pct.index]
-
-df_dominico = pd.concat([student_pct, teacher_pct], axis=0).fillna(0)
-
-# 4. Build visual assets using pure Matplotlib
-fig, ax = plt.subplots(figsize=(12, 6))
-
-# Define colors for the subjects to match a muted theme
-colors = plt.cm.tab10.colors
-subjects = df_dominico.columns
-groups = df_dominico.index
-
-num_groups = len(groups)
-num_subjects = len(subjects)
-
-# Calculate bar widths and positions
-width = 0.8 / num_subjects
-x = range(num_groups)
-
-# Plot grouped bars
-for i, subject in enumerate(subjects):
-    offset = (i - num_subjects / 2) * width + width / 2
-    ax.bar([pos + offset for pos in x], df_dominico[subject], width, label=subject, color=colors[i % len(colors)])
-
-# Custom plot styling configuration
-ax.set_title('Subject Distribution', fontsize=14, fontweight='bold', pad=15)
-ax.set_xlabel('Student / Teacher Grouping', fontsize=12, labelpad=10)
-ax.set_ylabel('Proportion Percentage (%)', fontsize=12, labelpad=10)
-ax.set_xticks(x)
-ax.set_xticklabels(groups)
-ax.set_ylim(0, df_dominico.values.max() + 5)
-ax.grid(axis='y', linestyle='--', alpha=0.7)
-ax.set_axisbelow(True)
-
-ax.legend(title='Subject Matrix', bbox_to_anchor=(1.01, 1), loc='upper left')
-
-plt.tight_layout()
-plt.show()
